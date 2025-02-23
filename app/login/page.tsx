@@ -19,15 +19,16 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await login(form);
+      console.log(res)
       if (res && res.data) {
-        localStorage.setItem( "token" , res.data );
+        localStorage.setItem( "token" , res.data.token );
         dispatch(setUser(res.data));
         router.push("/tasks");
       } else {
         setError("Login failed: No response data");
       }
     } catch (error) {
-      setError("Invalid email or password");
+      setError(error.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }

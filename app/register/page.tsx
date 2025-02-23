@@ -22,15 +22,15 @@ export default function Register() {
       const response = await register(form);
 
       if (response?.status === 201) {
-        alert("Registration successful! Redirecting to login...");
-        router.push("/login");
+        localStorage.setItem("token", response.data.token);
+        alert("Registration successful! ...");
+        router.push("/tasks");
       } else {
         alert(response?.data?.message || "Registration failed. Try again.");
       }
     } catch (error) {
-      console.log(error)
-      console.error("Error during registration:", error);
-      alert("Something went wrong. Please try again.");
+      console.log(error.response?.data?.message)
+      alert(error.response?.data?.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false); // Reset loading state
     }
