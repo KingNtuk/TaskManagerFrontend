@@ -7,6 +7,8 @@ import { getTasks, deleteTask, addTask, updateTask } from "../../api";
 import { useRouter } from "next/navigation";
 import { logout } from "@/src/slices/authSlice";
 
+
+
 export default function Tasks() {
   const router = useRouter();
   const { tasks } = useSelector((state: RootState) => state.tasks);
@@ -19,15 +21,18 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState({});
   const [status, setStatus] = useState('')
 
-  const fetchTasks = async () => {
-    try {
-      const res = await getTasks();
-      dispatch(setTasks(res.data));
-    } catch (error) {
-      console.log(error);
-      console.error("Error fetching tasks:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await getTasks();
+        dispatch(setTasks(res.data));
+      } catch (error) {
+        console.log(error);
+        console.error("Error fetching tasks:", error);
+      }
+    };
+    fetchTasks();
+  }, []);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -38,24 +43,9 @@ export default function Tasks() {
       setNewTask("")
       setEditText("")
       seteditDateText("")
-      fetchTasks();
+      window.location.reload();
     } catch (error) {
       console.error("Error adding task:", error);
-    }
-  };
-
-  const handleUpdateTask = async () => {
-    if (!editingTask?.id) return;
-    try {
-      const response = await updateTask(editingTask.id, {...editingTask, status});
-      console.log(response);
-      setTasks([...tasks, response.data]);
-      setEditingTask({})
-      setEditText("")
-      seteditDateText("")
-      fetchTasks();
-    } catch (error) {
-      console.error("Error updating task:", error);
     }
   };
 
@@ -68,27 +58,39 @@ export default function Tasks() {
     }
   };
 
-  // const updateTask = (id) => {
-  //   setTasks(tasks.map((task) => (task.id === id ? { ...task, title: editText } : task)));
-  //   setEditingTask(null);
-  // };
+
+  const handleUpdateTask = async () => {
+    if (!editingTask?.id) return;
+    try {
+      const response = await updateTask(editingTask.id, {...editingTask, status});
+      console.log(response);
+      setTasks([...tasks, response.data]);
+      setEditingTask({})
+      setEditText("")
+      seteditDateText("")
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
 
   const startEditing = (task) => {
-    console.log(task);
     setEditingTask(task);
     setEditText(task.title);
   };
+
 
   const cancelEditing = () => {
     setEditingTask({});
     setEditText("");
   };
 
+
   const toggleStatus = async (task) => {
     const updatedStatus = task.status === "completed" ? "pending" : "completed";
     try {
       await updateTask(task.id, {...task, status: updatedStatus});
-      fetchTasks();
+      window.location.reload();
     } catch (error) {
       console.error("Error adding task:", error);
     }
@@ -101,16 +103,21 @@ export default function Tasks() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      return router.push("/login");
+      // return router.push("/login");
     }
-    fetchTasks();
+    // fetchTasks();
   }, [isLoggedIn]);
+
+
+
+
+
 
   return (
     <>
       <div className="max-w-[900px] mx-auto mt-10 p-6 bg-white shadow-lg rounded-xl space-y-6">
-        <div className="flex justify-between">
-          <h1 className="text-3xl text-black font-bold text-center">{${user?.name}'s} Task Manager ✅</h1>
+        <div className=" flex justify-between mb-5">
+          <h1 className="text-3xl text-black font-bold text-center">Task Manager ✅</h1>
           <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</button>
         </div>
         <form className="flex gap-2" onSubmit={handleAddTask}>
@@ -145,20 +152,15 @@ export default function Tasks() {
           {tasks.map((task) => (
             <div className="p-4 flex justify-between items-center border border-gray-200 rounded-lg shadow-sm" key={task.id}>
               {
-                editingTask?.id !== task.id ? (
+                editingTask !== task.id ? (
                   <>    
-                    <div className="flex items-center">
-                      <div className="checkbox mr-4">
-                        <input type="checkbox" className="w-6 h-6 accent-green-600" defaultChecked={task.status === 'completed'} onClick={() => toggleStatus(task)}/>
-                      </div>
-                      <div className="content">
-                        <h1 className={text-xl font-bold text-gray-900 ${task.status === 'completed' ? 'line-through': ''}}>{task.title}</h1>
-                        <p className=" items-start flex text-gray-400 text-sm w-[350px] ">{task.description}</p>
-                        <p className=" items-start flex text-red-900 text-sm font-bold ">{task.due_date}</p>
-                      </div>
-                    </div>
-                    <span className={inline-block px-3 py-1 mt-2 text-sm font-semibold rounded-full ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-gray-800'}}>
-                      {task.status.toUpperCase()}
+                    <div>
+                      <h1 className="text-xl font-bold text-gray-900">{task.title}</h1>
+                      <p className=" items-start flex text-gray-400 text-sm w-[350px] ">{task.description}</p>
+                      <p className=" items-start flex text-red-900 text-sm font-bold ">{task.due_date}</p>
+                    </div>                
+                    <span className={`inline-block px-3 py-1 mt-2 text-sm font-semibold rounded-full ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-gray-800'}`}>
+                      {task.status}
                     </span>
                     <div className="flex space-x-2">
                       <button className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
@@ -167,7 +169,7 @@ export default function Tasks() {
                         Edit
                       </button>
                         <button 
-                        onClick={() => handleDeleteTask(task.id)} 
+                        onClick={() => handleDeleteTask(task.id)}
                         className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">
                           Delete
                       </button>
@@ -176,9 +178,11 @@ export default function Tasks() {
                 ) : (
                   <>
                   <form className="flex gap-2">
-                  <input value={status} placeholder="type 'completed' " className="w-full placeholder-slate-500 text-gray-900 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" onChange={(e) => setStatus(e.target.value)} />
+                  <div></div>
+                  <input type="checkbox" value={status} placeholder="type 'completed' " className=" w-6 placeholder-slate-500 text-gray-900  border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" onChange={(e) => setStatus(e.target.value)} />
+                  <p className="text-gray-400 ">click here to complete task</p>
                   <button className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 ml-2"
-                  onClick={handleUpdateTask}
+                  onClick={saveStatus}
                   >
                     Save
                   </button>
@@ -194,6 +198,6 @@ export default function Tasks() {
 
         </ul>
       </div>
-    </>
-  );
+    </>
+  );
 }

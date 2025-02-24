@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// export const metadata: Metadata = {
+// const metadata: Metadata = {
 //   title: "Task Manager",
 //   description: "Handle Task more better and easier with Task manager",
 // };
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Provider store={store}>{children}</Provider>
+        <Provider store={store}>{children}</Provider>{/* Redux is now inside a client component */}
       </body>
     </html>
   );
