@@ -40,14 +40,12 @@ export default function Register() {
     <div className="flex flex-col items-center justify-center mt-32 space-y-4 text-center">
       <form
         onSubmit={handleSubmit}
-        className="space-y-4 p-8 bg-slate-300 w-[400px] rounded-md shadow-md"
-      >
+        className="space-y-4 p-8 bg-slate-300 w-[400px] rounded-md shadow-md">
         <h1 className="text-2xl font-bold mb-5 text-gray-900">Register</h1>
-
         <input
           type="text"
           placeholder="Full Name"
-          className="w-full p-2 border rounded-md placeholder-gray-500"
+          className="w-full p-2 text-gray-900 border rounded-md placeholder-gray-500"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
@@ -55,7 +53,7 @@ export default function Register() {
         <input
           type="email"
           placeholder="Email"
-          className="w-full p-2 border rounded-md placeholder-gray-500"
+          className="w-full p-2 text-gray-900 border rounded-md placeholder-gray-500"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
         />
@@ -63,7 +61,7 @@ export default function Register() {
         <input
           type="password"
           placeholder="Password"
-          className="w-full p-2 border rounded-md placeholder-gray-500"
+          className="w-full p-2 text-gray-900 border rounded-md placeholder-gray-500"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />

@@ -19,13 +19,13 @@ export const login = async (userData: any) => {
 };
 
 
-export const updateTask = async (_todoId: any, todoData : any) => {
+export const updateTask = async ( todoId: any, todoData : any) => {
   const token = localStorage.getItem("token");
 
   if (!token) {
     throw new Error("No token found");
   }
-  return api.put("/tasks/${todoId}", todoData, {
+  return api.put(`/tasks/${todoId}`, todoData, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -58,6 +58,7 @@ export const deleteTask = async (id : any) => {
     },
   });
 };
+
 
 
 export const getTasks = async () => {

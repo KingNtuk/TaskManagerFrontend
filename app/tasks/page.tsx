@@ -6,6 +6,7 @@ import { setTasks } from "../../src/slices/taskSlice";
 import { getTasks, deleteTask, addTask, updateTask } from "../../api";
 import { useRouter } from "next/navigation";
 import { logout } from "@/src/slices/authSlice";
+import { format } from "date-fns";
 
 export default function Tasks() {
   const router = useRouter();
@@ -44,21 +45,6 @@ export default function Tasks() {
     }
   };
 
-  const handleUpdateTask = async () => {
-    if (!editingTask?.id) return;
-    try {
-      const response = await updateTask(editingTask.id, {...editingTask, status});
-      console.log(response);
-      setTasks([...tasks, response.data]);
-      setEditingTask({})
-      setEditText("")
-      seteditDateText("")
-      fetchTasks();
-    } catch (error) {
-      console.error("Error updating task:", error);
-    }
-  };
-
   const handleDeleteTask = async (id) => {
     try {
       await deleteTask(id);
@@ -68,10 +54,8 @@ export default function Tasks() {
     }
   };
 
-  // const updateTask = (id) => {
-  //   setTasks(tasks.map((task) => (task.id === id ? { ...task, title: editText } : task)));
-  //   setEditingTask(null);
-  // };
+
+  
 
   const startEditing = (task) => {
     console.log(task);
@@ -87,6 +71,7 @@ export default function Tasks() {
   const toggleStatus = async (task) => {
     const updatedStatus = task.status === "completed" ? "pending" : "completed";
     try {
+      console.log(task.id)
       await updateTask(task.id, {...task, status: updatedStatus});
       fetchTasks();
     } catch (error) {
@@ -101,7 +86,7 @@ export default function Tasks() {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      return router.push("/login");
+      // return router.push("/login");
     }
     fetchTasks();
   }, [isLoggedIn]);
@@ -110,7 +95,7 @@ export default function Tasks() {
     <>
       <div className="max-w-[900px] mx-auto mt-10 p-6 bg-white shadow-lg rounded-xl space-y-6">
         <div className="flex justify-between">
-          <h1 className="text-3xl text-black font-bold text-center">{${user?.name}'s} Task Manager ✅</h1>
+          <h1 className="text-3xl text-black font-bold text-center">Task Manager ✅</h1>
           <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">Logout</button>
         </div>
         <form className="flex gap-2" onSubmit={handleAddTask}>
@@ -144,54 +129,44 @@ export default function Tasks() {
         <ul className="space-y-4">
           {tasks.map((task) => (
             <div className="p-4 flex justify-between items-center border border-gray-200 rounded-lg shadow-sm" key={task.id}>
-              {
-                editingTask?.id !== task.id ? (
-                  <>    
-                    <div className="flex items-center">
-                      <div className="checkbox mr-4">
-                        <input type="checkbox" className="w-6 h-6 accent-green-600" defaultChecked={task.status === 'completed'} onClick={() => toggleStatus(task)}/>
-                      </div>
-                      <div className="content">
-                        <h1 className={text-xl font-bold text-gray-900 ${task.status === 'completed' ? 'line-through': ''}}>{task.title}</h1>
-                        <p className=" items-start flex text-gray-400 text-sm w-[350px] ">{task.description}</p>
-                        <p className=" items-start flex text-red-900 text-sm font-bold ">{task.due_date}</p>
-                      </div>
+              {editingTask?.id !== task.id ? (
+                <>
+                  <div className="flex items-center">
+                    <div className="checkbox mr-4">
+                      <input 
+                        type="checkbox" 
+                        className="w-6 h-6 accent-green-600" 
+                        defaultChecked={task.status === 'completed'} 
+                        onClick={() => toggleStatus(task)}
+                      />
                     </div>
-                    <span className={inline-block px-3 py-1 mt-2 text-sm font-semibold rounded-full ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-gray-800'}}>
-                      {task.status.toUpperCase()}
-                    </span>
-                    <div className="flex space-x-2">
-                      <button className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
-                      onClick={() => startEditing(task)} 
-                      >
-                        Edit
-                      </button>
-                        <button 
-                        onClick={() => handleDeleteTask(task.id)} 
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600">
-                          Delete
-                      </button>
+                    <div className="content">
+                      <h1 className={`text-xl font-bold text-gray-900 ${task.status === 'completed' ? 'line-through' : ''}`}>
+                        {task.title}
+                      </h1>
+                      <p className={`items-start flex text-gray-400 text-sm w-[350px] ${task.status === 'completed' ? 'line-through' : ''}`}>{task.description}</p>
+                      <p className={`items-start flex text-red-900 text-sm font-bold pt-1 ${task.status === 'completed' ? 'line-through' : ''}`}>{format(new Date(task.due_date), "EEEE, MMMM do yyyy")}</p>
+                    </div>
                   </div>
-                  </>
-                ) : (
-                  <>
-                  <form className="flex gap-2">
-                  <input value={status} placeholder="type 'completed' " className="w-full placeholder-slate-500 text-gray-900 px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" onChange={(e) => setStatus(e.target.value)} />
-                  <button className="bg-green-500 text-white px-3 py-1 rounded-lg hover:bg-green-600 ml-2"
-                  onClick={handleUpdateTask}
-                  >
-                    Save
-                  </button>
-                  <button onClick={cancelEditing} className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-gray-500 ml-2">
-                  ✖
-                  </button>
-                  </form>
-                  </>
-                )
-              }
-          </div>
+                  <span className={`inline-block px-3 py-1 mt-2 text-sm font-semibold rounded-full ${task.status === 'completed' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-gray-800'}`}>
+                    {task.status.toUpperCase()}
+                  </span>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  
+                </>
+              )}
+            </div>
           ))}
-
         </ul>
       </div>
     </>
